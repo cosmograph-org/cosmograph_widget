@@ -27,12 +27,12 @@ class Cosmograph(anywidget.AnyWidget):
     _css = CSS
 
     # Variables that the JS side is listening to. For private usage only
-    _records_arrow_table_buffer = traitlets.Bytes().tag(sync=True)
-    _meta_arrow_table_buffer = traitlets.Bytes().tag(sync=True)
+    _links_arrow_table_buffer = traitlets.Bytes().tag(sync=True)
+    _nodes_arrow_table_buffer = traitlets.Bytes().tag(sync=True)
 
     # Data that Python can observe
-    records = traitlets.Any()
-    meta = traitlets.Any()
+    links = traitlets.Any()
+    nodes = traitlets.Any()
 
     # Config parameters that Python can observe and the JS side is listening to
     render_links = traitlets.Bool(True).tag(sync=True)
@@ -53,13 +53,13 @@ class Cosmograph(anywidget.AnyWidget):
       if msg_type == "adjacent_node_ids":
           self.adjacent_node_ids_to_clicked_node = data['adjacentNodeIds']
 
-    @traitlets.observe("records")
-    def on_records_change(self, change):
-      self._records_arrow_table_buffer = self.get_buffered_arrow_table(change.new)
+    @traitlets.observe("links")
+    def on_links_change(self, change):
+      self._links_arrow_table_buffer = self.get_buffered_arrow_table(change.new)
 
-    @traitlets.observe("meta")
-    def on_meta_change(self, change):
-      self._meta_arrow_table_buffer = self.get_buffered_arrow_table(change.new)
+    @traitlets.observe("nodes")
+    def on_nodes_change(self, change):
+      self._nodes_arrow_table_buffer = self.get_buffered_arrow_table(change.new)
 
     # Convert a Pandas DataFrame into a binary format and then write it to an IPC (Inter-Process Communication) stream.
     # The `with` statement ensures that the IPC stream is properly closed after writing the data.

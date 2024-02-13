@@ -1,7 +1,7 @@
 import { fromArrow } from 'arquero'
 import { tableFromIPC } from 'apache-arrow';
 
-export function getBasicMetaFromLinks (links: { source: string; target: string  }[]): { id: string }[] {
+export function getBasicNodesFromLinks (links: { source: string; target: string  }[]): { id: string }[] {
   return [
     ...new Set([
       ...links.map(d => d.source),

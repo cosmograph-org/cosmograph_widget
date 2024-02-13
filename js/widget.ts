@@ -2,15 +2,15 @@ import type { RenderContext } from "@anywidget/types";
 import { Cosmograph, CosmographInputConfig } from '@cosmograph/cosmograph';
 import { CosmosInputNode, CosmosInputLink } from '@cosmograph/cosmos';
 
-import { getBasicMetaFromLinks, getTableFromBuffer } from './helper'
+import { getBasicNodesFromLinks, getTableFromBuffer } from './helper'
 import "./widget.css";
 
 /* Specifies attributes defined with traitlets in ../src/cosmograph/__init__.py */
 interface WidgetModel {
-	_records_arrow_table_buffer: {
+	_links_arrow_table_buffer: {
 		buffer: string;
 	};
-	_meta_arrow_table_buffer: {
+	_nodes_arrow_table_buffer: {
 		buffer: string;
 	};
 
@@ -47,8 +47,8 @@ export function render({ model, el }: RenderContext<WidgetModel>) {
 	const cosmograph = new Cosmograph(container, config);
 
 	function setDataFromBuffer () {
-		const links = getTableFromBuffer<CosmosInputLink>(model.get("_records_arrow_table_buffer")?.buffer) ?? []
-		const nodes = getTableFromBuffer<CosmosInputNode>(model.get("_meta_arrow_table_buffer")?.buffer) ?? getBasicMetaFromLinks(links)
+		const links = getTableFromBuffer<CosmosInputLink>(model.get("_links_arrow_table_buffer")?.buffer) ?? []
+		const nodes = getTableFromBuffer<CosmosInputNode>(model.get("_nodes_arrow_table_buffer")?.buffer) ?? getBasicMetaFromLinks(links)
 
 		cosmograph.setData(nodes, links);
 	}
@@ -56,10 +56,10 @@ export function render({ model, el }: RenderContext<WidgetModel>) {
 	setDataFromBuffer()
 
 	// Listen changes from Python
-	model.on("change:_records_arrow_table_buffer", () => {
+	model.on("change:_links_arrow_table_buffer", () => {
 		setDataFromBuffer()
 	});
-	model.on("change:_meta_arrow_table_buffer", () => {
+	model.on("change:_nodes_arrow_table_buffer", () => {
 		setDataFromBuffer()
 	});
 	model.on("change:render_links", () => {
