@@ -39,6 +39,9 @@ class Cosmograph(anywidget.AnyWidget):
     show_dynamic_labels = traitlets.Bool(True).tag(sync=True)
     # ...
 
+    # Clicked node id that updates with the JS side 
+    clicked_node_id = traitlets.Unicode().tag(sync=True)
+
     @traitlets.observe("records")
     def on_records_change(self, change):
       self._records_arrow_table_buffer = self.get_buffered_arrow_table(change.new)

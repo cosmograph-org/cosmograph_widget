@@ -30,8 +30,13 @@ export function render({ model, el }: RenderContext<WidgetModel>) {
 	// Initiate Cosmograph
 	const cosmograph = new Cosmograph(container, {
 		renderLinks: model.get("render_links") ?? true,
-		showDynamicLabels: model.get("show_dynamic_labels") ?? true
+		showDynamicLabels: model.get("show_dynamic_labels") ?? true,
 		// ...
+		onClick: (clickedNode) => {
+			// Demonstration how to set a value from JS to Python
+			model.set('clicked_node_id', `${clickedNode?.id ?? ''}`)
+			model.save_changes()
+		}
 	});
 
 	function setDataFromBuffer () {
