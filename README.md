@@ -21,4 +21,10 @@ Go to the folder that was cloned:
 cd cosmograph_widget
 ```
 
+Now you're in the directory where the `package.json` file is, so you can simply do:
+
+```sh
+npm install
+```
+
 
