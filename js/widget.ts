@@ -1,5 +1,5 @@
 import type { RenderContext } from "@anywidget/types";
-import { Cosmograph } from '@cosmograph/cosmograph';
+import { Cosmograph, CosmographInputConfig } from '@cosmograph/cosmograph';
 import { CosmosInputNode, CosmosInputLink } from '@cosmograph/cosmos';
 
 import { getBasicMetaFromLinks, getTableFromBuffer } from './helper'
@@ -27,17 +27,24 @@ export function render({ model, el }: RenderContext<WidgetModel>) {
 	const container = document.createElement('div');
 	div.appendChild(container);
 
-	// Initiate Cosmograph
-	const cosmograph = new Cosmograph(container, {
+	const config: CosmographInputConfig<CosmosInputNode, CosmosInputLink> = {
 		renderLinks: model.get("render_links") ?? true,
 		showDynamicLabels: model.get("show_dynamic_labels") ?? true,
 		// ...
+
 		onClick: (clickedNode) => {
-			// Demonstration how to set a value from JS to Python
+			// Demonstration how to set a value from JS to Python (1)
 			model.set('clicked_node_id', `${clickedNode?.id ?? ''}`)
 			model.save_changes()
+
+			// Demonstration how to send a message to a Python side (2)
+			const adjacentNodes = clickedNode ? cosmograph.getAdjacentNodes(clickedNode.id) : []
+			model.send({ msg_type: 'adjacent_node_ids', adjacentNodeIds: adjacentNodes?.map(d => d.id) ?? [] })
 		}
-	});
+	}
+
+	// Initiate Cosmograph
+	const cosmograph = new Cosmograph(container, config);
 
 	function setDataFromBuffer () {
 		const links = getTableFromBuffer<CosmosInputLink>(model.get("_records_arrow_table_buffer")?.buffer) ?? []
@@ -57,11 +64,11 @@ export function render({ model, el }: RenderContext<WidgetModel>) {
 	});
 	model.on("change:render_links", () => {
 		const renderLinks = model.get("render_links")
-		if (typeof renderLinks === 'boolean') cosmograph.setConfig({ renderLinks })
+		if (typeof renderLinks === 'boolean') cosmograph.setConfig({ ...config, renderLinks })
 	});
 	model.on("change:show_dynamic_labels", () => {
 		const showDynamicLabels = model.get("show_dynamic_labels")
-		if (typeof showDynamicLabels === 'boolean') cosmograph.setConfig({ showDynamicLabels })
+		if (typeof showDynamicLabels === 'boolean') cosmograph.setConfig({ ...config, showDynamicLabels })
 	});
 
 	el.appendChild(div);

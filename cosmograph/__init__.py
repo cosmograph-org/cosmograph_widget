@@ -41,6 +41,17 @@ class Cosmograph(anywidget.AnyWidget):
 
     # Clicked node id that updates with the JS side 
     clicked_node_id = traitlets.Unicode().tag(sync=True)
+    # List of adjacent node ids to clicked node that updates with Python on message from JS side
+    adjacent_node_ids_to_clicked_node = traitlets.List()
+
+    def __init__(self, *args, **kwargs):
+       super().__init__(*args, **kwargs)
+       self.on_msg(self._handle_custom_msg)
+    
+    def _handle_custom_msg(self, data: dict, buffers: list):
+      msg_type = data['msg_type']
+      if msg_type == "adjacent_node_ids":
+          self.adjacent_node_ids_to_clicked_node = data['adjacentNodeIds']
 
     @traitlets.observe("records")
     def on_records_change(self, change):
