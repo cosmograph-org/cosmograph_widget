@@ -13,7 +13,7 @@ if _DEV:
   CSS = ""
 else:
   ESM = (pathlib.Path(__file__).parent / "static" / "widget.mjs").read_text()
-  CSS = (pathlib.Path(__file__).parent / "static" / "style.css").read_text()
+  CSS = "" # (pathlib.Path(__file__).parent / "static" / "style.css").read_text()
 
 try:
     __version__ = importlib.metadata.version("cosmograph")
