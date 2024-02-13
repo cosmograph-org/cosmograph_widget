@@ -64,6 +64,7 @@ class Cosmograph(anywidget.AnyWidget):
     # Convert a Pandas DataFrame into a binary format and then write it to an IPC (Inter-Process Communication) stream.
     # The `with` statement ensures that the IPC stream is properly closed after writing the data.
     def get_buffered_arrow_table(self, df):
+      # TODO: Add support for input data with different formats (e.g. CSV, Appache Arrow, DuckDB, etc.)
       table = pa.Table.from_pandas(df)
       sink = pa.BufferOutputStream()
       with pa.ipc.new_stream(sink, table.schema) as writer:

@@ -48,7 +48,7 @@ export function render({ model, el }: RenderContext<WidgetModel>) {
 
 	function setDataFromBuffer () {
 		const links = getTableFromBuffer<CosmosInputLink>(model.get("_links_arrow_table_buffer")?.buffer) ?? []
-		const nodes = getTableFromBuffer<CosmosInputNode>(model.get("_nodes_arrow_table_buffer")?.buffer) ?? getBasicMetaFromLinks(links)
+		const nodes = getTableFromBuffer<CosmosInputNode>(model.get("_nodes_arrow_table_buffer")?.buffer) ?? getBasicNodesFromLinks(links)
 
 		cosmograph.setData(nodes, links);
 	}
