@@ -127,9 +127,9 @@ class TwCosmograph(anywidget.AnyWidget):
         return buffer.to_pybytes()
 
 
-def cosmo(links=None, nodes=None, **kwargs):
+def cosmo(nodes=None, links=None, **kwargs):
     if links is not None:
         kwargs.update(links=links)
     if nodes is not None:
         kwargs.update(nodes=nodes)
-    return Cosmograph(**kwargs)
+    return TwCosmograph(**kwargs)
