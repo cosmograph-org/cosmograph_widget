@@ -3,6 +3,8 @@ import { Cosmograph, CosmographInputConfig } from '@cosmograph/cosmograph';
 import { CosmosInputNode, CosmosInputLink } from '@cosmograph/cosmos';
 
 import { getBasicNodesFromLinks, getTableFromBuffer } from './helper'
+import { configSchema, Config } from './config-schema'
+
 import "./widget.css";
 
 /* Specifies attributes defined with traitlets in ../src/cosmograph/__init__.py */
@@ -14,12 +16,11 @@ interface WidgetModel {
 		buffer: string;
 	};
 
-	// Config
-	render_links: boolean;
-	show_dynamic_labels: boolean;
+	config: Config;
 }
 
-export function render({ model, el }: RenderContext<WidgetModel>) {
+
+export function render<N extends CosmosInputNode, L extends CosmosInputLink>({ model, el }: RenderContext<WidgetModel>) {
 	const div = document.createElement("div");
 	div.style.width = '100%';
 	div.style.height = '400px';
@@ -27,10 +28,16 @@ export function render({ model, el }: RenderContext<WidgetModel>) {
 	const container = document.createElement('div');
 	div.appendChild(container);
 
-	const config: CosmographInputConfig<CosmosInputNode, CosmosInputLink> = {
-		renderLinks: model.get("render_links") ?? true,
-		showDynamicLabels: model.get("show_dynamic_labels") ?? true,
-		// ...
+	const parsedInputConfig = configSchema.safeParse(model.get('config'))
+	const modelConfig = parsedInputConfig.success ? parsedInputConfig.data : configSchema.parse({})
+	if (!parsedInputConfig.success) {
+		model.set('error_message', parsedInputConfig.error.toString())
+		model.save_changes()
+	}
+
+	const config: CosmographInputConfig<N, L> = {
+		...modelConfig,
+		nodeLabelAccessor: modelConfig.nodeLabelAccessor ? node => (node[modelConfig.nodeLabelAccessor as keyof N] as string) : undefined,
 
 		onClick: (clickedNode) => {
 			// Demonstration how to set a value from JS to Python (1)
@@ -47,10 +54,10 @@ export function render({ model, el }: RenderContext<WidgetModel>) {
 	const cosmograph = new Cosmograph(container, config);
 
 	function setDataFromBuffer () {
-		const linksTable = getTableFromBuffer<CosmosInputLink>(model.get("_links_arrow_table_buffer")?.buffer)
-		const nodesTable = getTableFromBuffer<CosmosInputNode>(model.get("_nodes_arrow_table_buffer")?.buffer)
+		const linksTable = getTableFromBuffer<L>(model.get("_links_arrow_table_buffer")?.buffer)
+		const nodesTable = getTableFromBuffer<N>(model.get("_nodes_arrow_table_buffer")?.buffer)
 		const links = linksTable ?? []
-		const nodes = (nodesTable?.length === 0 &&  links?.length > 0 ? getBasicNodesFromLinks(links) : nodesTable) ?? []
+		const nodes = (nodesTable?.length === 0 &&  links?.length > 0 ? getBasicNodesFromLinks<N, L>(links) : nodesTable) ?? []
 		cosmograph.setData(nodes, links);
 	}
 
@@ -74,3 +81,5 @@ export function render({ model, el }: RenderContext<WidgetModel>) {
 
 	el.appendChild(div);
 }
+
+export { getConfigSchema } from './config-schema'

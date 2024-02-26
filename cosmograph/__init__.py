@@ -12,7 +12,7 @@ if _DEV:
     ESM = "http://localhost:5173/js/widget.ts?anywidget"
     CSS = ""
 else:
-    ESM = (pathlib.Path(__file__).parent / "static" / "widget.mjs").read_text()
+    ESM = (pathlib.Path(__file__).parent / "static" / "widget.js").read_text()
     CSS = ""  # (pathlib.Path(__file__).parent / "static" / "style.css").read_text()
 
 try:
@@ -96,10 +96,17 @@ class TwCosmograph(anywidget.AnyWidget):
     # Data that Python can observe
     links = traitlets.Any()
     nodes = traitlets.Any()
-    config = traitlets.Dict()  # the rest of the config parameters
+    config = traitlets.Dict().tag(sync=True)  # the rest of the config parameters
+
+    # Contain messages from TS side
+    error_message = traitlets.Unicode().tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # 🤷‍♀️ Is that okay 👇?
+        self.config = {k: v for k, v in kwargs.items() if k != "links" and k!= "nodes"}
+
         self.on_msg(self._handle_custom_msg)
 
     def _handle_custom_msg(self, data: dict, buffers: list):

@@ -1,14 +1,15 @@
 import { fromArrow } from 'arquero'
 import { tableFromIPC } from 'apache-arrow';
+import { CosmosInputNode, CosmosInputLink } from '@cosmograph/cosmos';
 
-export function getBasicNodesFromLinks (links: { source: string; target: string  }[]): { id: string }[] {
+export function getBasicNodesFromLinks<N extends CosmosInputNode, L extends CosmosInputLink> (links: L[]): N[] {
   return [
     ...new Set([
       ...links.map(d => d.source),
       ...links.map(d => d.target)
     ])
     
-  ].map(d => ({ id: d }))
+  ].map(d => ({ id: d } as N))
 }
 
 export function getTableFromBuffer <Datum>(buffer?: string): Datum[] | undefined {
