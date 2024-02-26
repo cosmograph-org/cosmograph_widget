@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { z } from 'zod'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import { mapKeys, camel } from 'radash'
@@ -73,12 +74,12 @@ export const configSchema = z.object({
   fit_view_delay: z.number().default(250),
   fit_view_by_nodes_in_rect: z.tuple([z.tuple([z.number(), z.number()]), z.tuple([z.number(), z.number()])]).optional(),
   random_seed: z.union([z.number(), z.string()]).optional(),
-  node_sampling_distance: z.number().default(150)
+  node_sampling_distance: z.number().default(150),
 })
-.transform(x => mapKeys(x, camel))
+  .transform(x => mapKeys(x, camel))
 
 export type Config = z.infer<typeof configSchema>
 
-export function getConfigSchema () {
+export function getConfigSchema (): unknown {
   return zodToJsonSchema(configSchema, 'configSchema')
 }
