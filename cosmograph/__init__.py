@@ -8,12 +8,19 @@ import pyarrow as pa
 
 _DEV = False  # switch to False for production
 
-if _DEV:
-    ESM = "http://localhost:5173/js/widget.ts?anywidget"
-    CSS = ""
-else:
-    ESM = (pathlib.Path(__file__).parent / "static" / "widget.js").read_text()
-    CSS = ""  # (pathlib.Path(__file__).parent / "static" / "style.css").read_text()
+try:
+    # TODO: Use importlib.resources instead of __file__
+    project_root = pathlib.Path(__file__).parent.parent
+    if _DEV:
+        ESM = "http://localhost:5173/js/widget.ts?anywidget"
+        CSS = ""
+    else:
+        ESM = (project_root / "cosmograph" / "static" / "widget.js").read_text()
+        CSS = ""  # (pathlib.Path(__file__).parent / "static" / "style.css").read_text()
+except FileNotFoundError as e:
+    raise FileNotFoundError(
+        f"{e}\nYou may need to run:\t`npm install --prefix {project_root}`"
+    )
 
 try:
     __version__ = importlib.metadata.version("cosmograph")
@@ -44,8 +51,8 @@ class Cosmograph(anywidget.AnyWidget):
     # List of adjacent node ids to clicked node that updates with Python on message from JS side
     adjacent_node_ids_to_clicked_node = traitlets.List()
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, nodes=None, links=None, **kwargs):
+        super().__init__(nodes=nodes, links=links, **kwargs)
         self.on_msg(self._handle_custom_msg)
 
     def _handle_custom_msg(self, data: dict, buffers: list):
@@ -101,12 +108,15 @@ class TwCosmograph(anywidget.AnyWidget):
     # Contain messages from TS side
     error_message = traitlets.Unicode().tag(sync=True)
 
+    # # TODO: Why is this not equivalent to the init we're using now!?
+    # def __init__(self, nodes=None, links=None, **kwargs):
+    #     super().__init__(nodes, links=links, **kwargs)
+    #     self.config = kwargs
+    #     self.on_msg(self._handle_custom_msg)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # 🤷‍♀️ Is that okay 👇?
-        self.config = {k: v for k, v in kwargs.items() if k != "links" and k!= "nodes"}
-
+        self.config = {k: v for k, v in kwargs.items() if k in {"links", "nodes"}}
         self.on_msg(self._handle_custom_msg)
 
     def _handle_custom_msg(self, data: dict, buffers: list):
