@@ -17,7 +17,8 @@ from i2 import Sig
 config_schema = json.loads((static_files / 'config-schema.json').read_text())
 
 config_schema_sig = json_schema_to_signature(
-    config_schema['definitions']['configSchema']
+    config_schema['definitions']['configSchema'],
+    default_default=None,
 )
 config_schema_sig = config_schema_sig.ch_kinds(
     **{name: Sig.KEYWORD_ONLY for name in config_schema_sig.names}

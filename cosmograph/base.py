@@ -135,7 +135,33 @@ class TwCosmograph(anywidget.AnyWidget):
         return buffer.to_pybytes()
 
 
+from cosmograph.util import config_schema_sig
+from i2 import Sig
+
+_cosmo_sig = Sig('(nodes=None, links=None)') + config_schema_sig
+_cosmo_sig = _cosmo_sig.ch_kinds(
+    **{name: Sig.KEYWORD_ONLY for name in _cosmo_sig.names}
+)
+_cosmo_sig = _cosmo_sig.ch_kinds(
+    nodes=Sig.POSITIONAL_OR_KEYWORD, links=Sig.POSITIONAL_OR_KEYWORD
+)
+
+
+@_cosmo_sig
 def cosmo(nodes=None, links=None, **kwargs):
+    """Make a cosmograph widget.
+
+    :param nodes: The nodes of the graph
+    :param links: The links of the graph
+    :param kwargs: Additional configuration parameters.
+
+    To see what additional configuration parameters you can use and what then mean,
+    you can have a look at: https://github.com/cosmograph-org/cosmos/wiki/Cosmos-configuration
+    (Just remember to change JS-style CamelCase variables to python-style snake_case
+    ones.)
+
+
+    """
     if links is not None:
         kwargs.update(links=links)
     if nodes is not None:
