@@ -1,81 +1,85 @@
-import type { RenderProps } from '@anywidget/types'
-import { Cosmograph, CosmographInputConfig } from '@cosmograph/cosmograph'
-import { CosmosInputNode, CosmosInputLink } from '@cosmograph/cosmos'
+import type { RenderContext } from "@anywidget/types";
+import { Cosmograph, CosmographConfig } from '@cosmograph/cosmograph'
+import { tableFromIPC } from 'apache-arrow'
 
-import { getBasicNodesFromLinks, getTableFromBuffer } from './helper'
-import { configSchema, Config } from './config-schema'
+import { toCamelCase } from './helper'
+import { configProperties } from './config-props'
 
-import './widget.css'
+import "./widget.css";
 
-/* Specifies attributes defined with traitlets in ../src/cosmograph/__init__.py */
+/* Specifies attributes defined with traitlets in ../src/cosmograph_widget/__init__.py */
 interface WidgetModel {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  _links_arrow_table_buffer: {
-    buffer: string;
-  };
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  _nodes_arrow_table_buffer: {
-    buffer: string;
-  };
-
-  config: Config;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  error_message: string;
+	value: number;
+	/* Add your own */
 }
 
-
-export function render<N extends CosmosInputNode, L extends CosmosInputLink> ({ model, el }: RenderProps<WidgetModel>): void {
-  const div = document.createElement('div')
-  div.style.width = '100%'
-  div.style.height = '400px'
-  div.style.color = 'white'
-  const container = document.createElement('div')
-  div.appendChild(container)
-
-  const parsedInputConfig = configSchema.safeParse(model.get('config'))
-  const modelConfig = parsedInputConfig.success ? parsedInputConfig.data : configSchema.parse({})
-  if (!parsedInputConfig.success) {
-    model.set('error_message', parsedInputConfig.error.toString())
-    model.save_changes()
-  }
-
-  const config: CosmographInputConfig<N, L> = {
-    ...modelConfig,
-    nodeLabelAccessor: modelConfig.nodeLabelAccessor ? node => (node[modelConfig.nodeLabelAccessor as keyof N] as string) : undefined,
-
-    // onClick: (clickedNode) => {
-    // // Demonstration how to set a value from JS to Python (1)
-    // model.set('clicked_node_id', `${clickedNode?.id ?? ''}`)
-    // model.save_changes()
-
-    // // Demonstration how to send a message to a Python side (2)
-    // const adjacentNodes = clickedNode ? cosmograph.getAdjacentNodes(clickedNode.id) : []
-    // model.send({ msg_type: 'adjacent_node_ids', adjacentNodeIds: adjacentNodes?.map(d => d.id) ?? [] })
-    // }
-  }
-
-  // Initiate Cosmograph
-  const cosmograph = new Cosmograph(container, config)
-
-  function setDataFromBuffer (): void {
-    const linksTable = getTableFromBuffer<L>(model.get('_links_arrow_table_buffer')?.buffer)
-    const nodesTable = getTableFromBuffer<N>(model.get('_nodes_arrow_table_buffer')?.buffer)
-    const links = linksTable ?? []
-    const nodes = (nodesTable?.length === 0 && links?.length > 0 ? getBasicNodesFromLinks<N, L>(links) : nodesTable) ?? []
-    cosmograph.setData(nodes, links)
-  }
-
-  setDataFromBuffer()
-
-  // Listen changes from Python
-  model.on('change:_links_arrow_table_buffer', () => {
-    setDataFromBuffer()
-  })
-  model.on('change:_nodes_arrow_table_buffer', () => {
-    setDataFromBuffer()
-  })
-
-  el.appendChild(div)
+function subscribe (model: RenderContext<WidgetModel>, name: string, callback: any) {
+	model.on(name, callback)
+	return () => model.off(name, callback)
 }
 
-export { getConfigSchema } from './config-schema'
+function render({ model, el }: RenderContext<WidgetModel>) {
+	el.classList.add("cosmograph_widget");
+	const main = document.createElement('div')
+  main.classList.add('widget-container')
+	el.appendChild(main)
+
+	let cosmograph: Cosmograph
+	const cosmographContainer = document.createElement('div')
+  cosmographContainer.classList.add('cosmograph-container')
+  main.appendChild(cosmographContainer)
+
+	const cosmographConfig: CosmographConfig = {
+		onClick: (index, pointPosition, e) => {
+			console.log('onClick', index, pointPosition, e)
+			model.set('clicked_node_index', index)
+			model.save_changes()
+		}
+	}
+
+	const callbacks: { [key: string]: () => void } = {
+		'change:_ipc_points': () => {
+			const ipc = model.get('_ipc_points')
+			cosmographConfig.points = ipc ? tableFromIPC(ipc.buffer) : []
+		},
+		'change:_ipc_links': () => {
+			const ipc = model.get('_ipc_links')
+			cosmographConfig.links = ipc ? tableFromIPC(ipc.buffer) : []
+		},
+		'change:selected_point_index': () => {
+			const index = model.get('selected_point_index')
+			cosmograph?.selectPoint(index, true)
+			
+		},
+		'change:selected_point_indices': () => {
+			const indices = model.get('selected_point_indices')
+			console.log('indices', indices)
+			cosmograph?.selectPoints(indices)
+		}
+	}
+
+	configProperties.forEach(prop => {
+		callbacks[`change:${prop}`] = () => {
+			const value = model.get(prop)
+			console.log(prop, toCamelCase(prop), value)
+			if (value !== null) cosmographConfig[toCamelCase(prop) as keyof CosmographConfig] = value
+		}
+	})
+
+	const unsubscribes = Object
+		.entries(callbacks)
+		.map(([name, callback]) => subscribe(model, name, () => {
+			callback()
+			cosmograph.setConfig(cosmographConfig)
+		}))
+
+	Object.values(callbacks).forEach(callback => callback())
+	cosmograph = new Cosmograph(cosmographContainer, cosmographConfig)
+	console.log('cosmograph', cosmograph)
+
+	return () => {
+		unsubscribes.forEach(unsubscribe => unsubscribe())
+	};
+}
+
+export default { render };

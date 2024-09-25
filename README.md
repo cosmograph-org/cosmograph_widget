@@ -1,30 +1,29 @@
 # cosmograph_widget
 
-Enables you to interact with the (JS) cosmograph tool from a python notebook.
-
-# Installation
-
-Assuming you 
-[python](https://www.python.org/downloads/), 
-[npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and 
-[git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) already installed...
-
-Git clone this project
+## Installation
 
 ```sh
-git clone https://github.com/cosmograph-org/cosmograph_widget/
+pip install cosmograph_widget
 ```
 
-Go to the folder that was cloned:
+## Development installation
+
+Create a virtual environment and and install cosmograph_widget in *editable* mode with the
+optional development dependencies:
 
 ```sh
-cd cosmograph_widget
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
 ```
 
-Now you're in the directory where the `package.json` file is, so you can simply do:
+You then need to install the JavaScript dependencies and run the development server.
 
 ```sh
 npm install
+npm run dev
 ```
 
-
+Open `example.ipynb` in JupyterLab, VS Code, or your favorite editor
+to start developing. Changes made in `js/` will be reflected
+in the notebook.

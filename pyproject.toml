@@ -3,9 +3,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "cosmograph"
+name = "cosmograph_widget"
 version = "0.0.0"
-dependencies = ["anywidget"]
+dependencies = ["anywidget", "pyarrow"]
+readme = "README.md"
 
 [project.optional-dependencies]
 dev = ["watchfiles", "jupyterlab"]
@@ -17,16 +18,14 @@ features = ["dev"]
 
 [tool.hatch.build]
 only-packages = true
-artifacts = ["cosmograph/static/*"]
-
-[tool.hatch.build.targets.wheel]
-packages = ["cosmograph"]
+artifacts = ["src/cosmograph_widget/static/*"]
 
 [tool.hatch.build.hooks.jupyter-builder]
 build-function = "hatch_jupyter_builder.npm_builder"
-ensured-targets = ["cosmograph/static/widget.js"]
+ensured-targets = ["src/cosmograph_widget/static/widget.js"]
+skip-if-exists = ["src/cosmograph_widget/static/widget.js"]
 dependencies = ["hatch-jupyter-builder>=0.5.0"]
 
 [tool.hatch.build.hooks.jupyter-builder.build-kwargs]
 npm = "npm"
-build_cmd = "postinstall"
+build_cmd = "build"

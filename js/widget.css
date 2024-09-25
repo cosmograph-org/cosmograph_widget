@@ -1,0 +1,12 @@
+.cosmograph_widget .widget-container {
+	overflow: auto;
+	height: 450px;
+	display: flex;
+}
+
+.cosmograph_widget .cosmograph-container {
+	overflow: auto;
+	height: 100%;
+	display: flex;
+}
+
