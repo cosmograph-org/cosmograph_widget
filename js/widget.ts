@@ -29,11 +29,42 @@ function render({ model, el }: RenderContext<WidgetModel>) {
   cosmographContainer.classList.add('cosmograph-container')
   main.appendChild(cosmographContainer)
 
+	model.on('msg:custom', (msg: { [key: string]: any }) => {
+		if (msg.type === 'fit_view') {
+			cosmograph?.fitView()
+		}
+		if (msg.type === 'fit_view_by_indices') {
+			cosmograph?.fitViewByIndices(msg.indices, msg.duration, msg.padding)
+		}
+		if (msg.type === 'fit_view_by_coordinates') {
+			cosmograph?.fitViewByCoordinates(msg.coordinates, msg.duration, msg.padding)
+		}
+		if(msg.type === 'focus_point') {
+			cosmograph?.focusPoint(msg.index ?? undefined)
+		}
+		if (msg.type === 'start') {
+			cosmograph?.start(msg.alpha ?? undefined)
+		}
+		if (msg.type === 'pause') {
+			cosmograph?.pause()
+		}
+		if (msg.type === 'restart') {
+			cosmograph?.restart()
+		}
+		if (msg.type === 'step') {
+			cosmograph?.step()
+		}
+	});
+
 	const cosmographConfig: CosmographConfig = {
-		onClick: (index, pointPosition, e) => {
-			console.log('onClick', index, pointPosition, e)
+		onClick: (index) => {
 			model.set('clicked_node_index', index)
 			model.save_changes()
+		},
+		onPointsFiltered: () => {
+			model.set('selected_point_indices', cosmograph?.getSelectedPointIndices() ?? [])
+			model.save_changes()
+			
 		}
 	}
 
@@ -46,22 +77,25 @@ function render({ model, el }: RenderContext<WidgetModel>) {
 			const ipc = model.get('_ipc_links')
 			cosmographConfig.links = ipc ? tableFromIPC(ipc.buffer) : []
 		},
-		'change:selected_point_index': () => {
-			const index = model.get('selected_point_index')
+		'change:_selected_point_index': () => {
+			const index = model.get('_selected_point_index')
 			cosmograph?.selectPoint(index, true)
 			
 		},
-		'change:selected_point_indices': () => {
-			const indices = model.get('selected_point_indices')
-			console.log('indices', indices)
+		'change:_selected_point_indices': () => {
+			const indices = model.get('_selected_point_indices')
 			cosmograph?.selectPoints(indices)
+		},
+		'change:_is_rect_selection_active': () => {
+			const isActive = model.get('_is_rect_selection_active')
+			if (isActive) cosmograph?.activateRectSelection()
+			else cosmograph?.deactivateRectSelection()
 		}
 	}
 
 	configProperties.forEach(prop => {
 		callbacks[`change:${prop}`] = () => {
 			const value = model.get(prop)
-			console.log(prop, toCamelCase(prop), value)
 			if (value !== null) cosmographConfig[toCamelCase(prop) as keyof CosmographConfig] = value
 		}
 	})
@@ -75,7 +109,6 @@ function render({ model, el }: RenderContext<WidgetModel>) {
 
 	Object.values(callbacks).forEach(callback => callback())
 	cosmograph = new Cosmograph(cosmographContainer, cosmographConfig)
-	console.log('cosmograph', cosmograph)
 
 	return () => {
 		unsubscribes.forEach(unsubscribe => unsubscribe())

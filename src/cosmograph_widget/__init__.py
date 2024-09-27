@@ -104,8 +104,10 @@ class Cosmograph(anywidget.AnyWidget):
     show_hovered_point_label = Bool(None, allow_none=True).tag(sync=True)
 
     clicked_node_index = Int(None, allow_none=True).tag(sync=True)
-    selected_point_index = Int(None, allow_none=True).tag(sync=True)
+    _selected_point_index = Int(None, allow_none=True).tag(sync=True)
+    _selected_point_indices = List(Int, allow_none=True).tag(sync=True)
     selected_point_indices = List(Int, allow_none=True).tag(sync=True)
+    _is_rect_selection_active = Bool(None, allow_none=True).tag(sync=True)
 
     # Convert a Pandas DataFrame into a binary format and then write it to an IPC (Inter-Process Communication) stream.
     # The `with` statement ensures that the IPC stream is properly closed after writing the data.
@@ -133,7 +135,31 @@ class Cosmograph(anywidget.AnyWidget):
         self._ipc_links = self.get_buffered_arrow_table(links)
 
     def select_point_by_index(self, index):
-        self.selected_point_index = index
+        self._selected_point_index = index
 
     def select_points_by_indices(self, indices):
-        self.selected_point_indices = indices
+        self._selected_point_indices = indices
+
+    def activate_rect_selection(self):
+        self._is_rect_selection_active = True
+    def deactivate_rect_selection(self):
+        self._is_rect_selection_active = False
+
+    def fit_view(self):
+        self.send({ "type": "fit_view" })
+    def fit_view_by_indices(self, indices, duration=None, padding=None):
+        self.send({ "type": "fit_view_by_indices", "indices": indices, "duration": duration, "padding": padding })
+    def fit_view_by_coordinates(self, coordinates, duration=None, padding=None):
+        self.send({ "type": "fit_view_by_coordinates", "coordinates": coordinates, "duration": duration, "padding": padding })
+
+    def focus_point(self, index=None):
+        self.send({ "type": "focus_point", "index": index })
+    
+    def start(self, alpha=None):
+        self.send({ "type": "start", "alpha": alpha })
+    def pause(self):
+        self.send({ "type": "pause" })
+    def restart(self):
+        self.send({ "type": "restart" })
+    def step(self):
+        self.send({ "type": "step" })
