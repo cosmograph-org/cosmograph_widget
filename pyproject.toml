@@ -2,11 +2,16 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.version]
+path = "src/cosmograph_widget/__about__.py"
+
 [project]
-name = "cosmograph_widget"
-version = "0.0.0"
+name = "cosmograph-widget"
 dependencies = ["anywidget", "pyarrow"]
 readme = "README.md"
+dynamic = [
+ "version",
+]
 
 [project.optional-dependencies]
 dev = ["watchfiles", "jupyterlab"]
