@@ -104,10 +104,7 @@ class Cosmograph(anywidget.AnyWidget):
     show_hovered_point_label = Bool(None, allow_none=True).tag(sync=True)
 
     clicked_node_index = Int(None, allow_none=True).tag(sync=True)
-    _selected_point_index = Int(None, allow_none=True).tag(sync=True)
-    _selected_point_indices = List(Int, allow_none=True).tag(sync=True)
     selected_point_indices = List(Int, allow_none=True).tag(sync=True)
-    _is_rect_selection_active = Bool(None, allow_none=True).tag(sync=True)
 
     # Convert a Pandas DataFrame into a binary format and then write it to an IPC (Inter-Process Communication) stream.
     # The `with` statement ensures that the IPC stream is properly closed after writing the data.
@@ -135,15 +132,14 @@ class Cosmograph(anywidget.AnyWidget):
         self._ipc_links = self.get_buffered_arrow_table(links)
 
     def select_point_by_index(self, index):
-        self._selected_point_index = index
-
+        self.send({ "type": "select_point_by_index", "index": index })
     def select_points_by_indices(self, indices):
-        self._selected_point_indices = indices
+        self.send({ "type": "select_points_by_indices", "indices": indices })
 
     def activate_rect_selection(self):
-        self._is_rect_selection_active = True
+        self.send({ "type": "activate_rect_selection" })
     def deactivate_rect_selection(self):
-        self._is_rect_selection_active = False
+        self.send({ "type": "deactivate_rect_selection" })
 
     def fit_view(self):
         self.send({ "type": "fit_view" })
