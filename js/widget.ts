@@ -59,7 +59,7 @@ function render({ model, el }: RenderProps) {
 
 	const cosmographConfig: CosmographConfig = {
 		onClick: (index) => {
-			model.set('clicked_node_index', index)
+			model.set('clicked_point_index', index)
 			model.save_changes()
 		},
 		onPointsFiltered: () => {
