@@ -23,23 +23,26 @@ export function subscribe(model: AnyModel, name: string, callback: () => void) {
   return (): void => model.off(name, callback)
 }
 
-export const duckDBNumericTypes = [
-  'TINYINT',
-  'SMALLINT',
-  'INTEGER',
-  'BIGINT',
-  'HUGEINT',
-  'UTINYINT',
-  'USMALLINT',
-  'UINTEGER',
-  'UBIGINT',
-  'UHUGEINT',
-  'FLOAT',
-  'DOUBLE',
-  'DECIMAL',
+export const isDuckDBNumericType = (type: unknown): boolean => {
+  return typeof type === 'string' && [
+    'TINYINT',
+    'SMALLINT',
+    'INTEGER',
+    'BIGINT',
+    'HUGEINT',
+    'UTINYINT',
+    'USMALLINT',
+    'UINTEGER',
+    'UBIGINT',
+    'UHUGEINT',
+    'FLOAT',
+    'DOUBLE',
+    'DECIMAL',
+  ].includes(type)
+}
 
-]
-
-export const duckDBStringTypes = [
-  'VARCHAR',
-]
+export const isDuckDBStringType = (type: unknown): boolean => {
+  return typeof type === 'string' && [
+    'VARCHAR',
+  ].includes(type)
+}

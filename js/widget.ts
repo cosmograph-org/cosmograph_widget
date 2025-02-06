@@ -5,7 +5,7 @@ import { tableFromIPC } from 'apache-arrow'
 import { subscribe, toCamelCase } from './helper'
 import { configProperties } from './config-props'
 import { createWidgetContainer } from './widget-elements'
-import { prepareCosmographDataAndMutate, getPointColorStrategy, getPointSizeStrategy, getPointColorLegendType, updateLinkColorFn } from './cosmograph-data'
+import { prepareCosmographDataAndMutate, resolveOptimalPointColorStrategy, resolveOptimalPointSizeStrategy, getPointColorLegendType, updateLinkColorFn } from './cosmograph-data'
 import { CosmographLegends } from './legends'
 import { PointTimeline } from './components/point-timeline'
 import { ControlButtonsComponent } from './components/control-buttons'
@@ -141,16 +141,14 @@ async function render({ model, el }: RenderProps) {
 
       // If color associated properties change, update the color strategy
       if (propName === 'point_color_by' || propName === 'point_color_palette' || propName === 'point_color_by_map' || propName === 'point_color_strategy') {
-        cosmographConfig.pointColorStrategy = model.get('point_color_strategy')
         const pointsSummary = cosmograph?.stats.pointsSummary
-        cosmographConfig.pointColorStrategy = getPointColorStrategy(cosmographConfig, pointsSummary)
+        cosmographConfig.pointColorStrategy = model.get('point_color_strategy') ?? resolveOptimalPointColorStrategy(cosmographConfig, pointsSummary)
       }
 
       // If size associated properties change, update the size strategy
       if (propName === 'point_size_by' || propName === 'point_size_range' || propName === 'point_size_strategy') {
-        cosmographConfig.pointSizeStrategy = model.get('point_size_strategy')
         const pointsSummary = cosmograph?.stats.pointsSummary
-        cosmographConfig.pointSizeStrategy = getPointSizeStrategy(cosmographConfig, pointsSummary)
+        cosmographConfig.pointSizeStrategy = model.get('point_size_strategy') ?? resolveOptimalPointSizeStrategy(cosmographConfig, pointsSummary)
       }
 
       if (propName === 'link_color_by') {

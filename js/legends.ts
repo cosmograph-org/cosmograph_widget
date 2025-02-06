@@ -86,38 +86,21 @@ export class CosmographLegends {
     switch (`${type}_${property}`) {
       case 'point_size':
         container = this.pointSizeLegendContainer
-        if (!hide) {
-          if (!this._pointSizeLegend) {
-            this._pointSizeLegend = new CosmographSizeLegend(this.cosmograph, container, {
-              label: d => `${type}s by ${d}`,
-            })
-          } else {
-            const config = await this._pointSizeLegend.getConfig()
-            await this._pointSizeLegend.setConfig({
-              ...config,
-              label: d => `${type}s by ${d}`,
-            })
-          }
+        if (!hide && !this._pointSizeLegend) {
+          this._pointSizeLegend = new CosmographSizeLegend(this.cosmograph, container, {
+            label: d => `${type}s by ${d}`,
+          })
         }
-
         legendInstance = this._pointSizeLegend
         break
       case 'point_color':
         if (colorType === 'range') {
           container = this.pointColorLegendContainer
-          if (!hide) {
-            if (this._pointRangeColorLegend) {
-              await this._pointRangeColorLegend.setConfig({
-                ...(await this._pointRangeColorLegend.getConfig()),
-                label: d => `${type}s by ${d}`,
-              })
-            } else {
-              this._pointRangeColorLegend = new CosmographRangeColorLegend(this.cosmograph, container, {
-                label: d => `${type}s by ${d}`,
-              })
-            }
+          if (!hide && !this._pointRangeColorLegend) {
+            this._pointRangeColorLegend = new CosmographRangeColorLegend(this.cosmograph, container, {
+              label: d => `${type}s by ${d}`,
+            })
           }
-
           legendInstance = this._pointRangeColorLegend
         } else if (colorType === 'type') {
           container = this.pointTypeColorLegendContainer
