@@ -275,3 +275,6 @@ class Cosmograph(anywidget.AnyWidget):
 
     def step(self):
         self.send({"type": "step"})
+
+    def capture_screenshot(self):
+        self.send({"type": "capture_screenshot"})

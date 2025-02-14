@@ -71,6 +71,9 @@ async function render({ model, el }: RenderProps) {
     if (msg.type === 'step') {
       cosmograph?.step()
     }
+    if (msg.type === 'capture_screenshot') {
+      cosmograph?.captureScreenshot()
+    }
   })
 
   const cosmographConfig: CosmographConfig = {

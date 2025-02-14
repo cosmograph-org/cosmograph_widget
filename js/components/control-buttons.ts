@@ -14,8 +14,27 @@ export class ControlButtonsComponent {
     this.element = element
     const { fitViewButtonContainer, zoomInOutButtonContainer, playButtonContainer, selectAreaButtonContainer } = createWidgetControlElements(element)
     this.fitViewButton = new CosmographButtonFitView(cosmograph, fitViewButtonContainer)
+
+    /** Error in cosmograph/ui button in CSS */
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    this.fitViewButton._fitViewButton.show()
     this.zoomInOutButton = new CosmographButtonZoomInOut(cosmograph, zoomInOutButtonContainer)
+
+    /** Error in cosmograph/ui button in CSS */
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    this.zoomInOutButton._zoomInButton.show()
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    this.zoomInOutButton._zoomOutButton.show()
+
     this.playButton = new CosmographButtonPlayPause(cosmograph, playButtonContainer)
     this.selectAreaButton = new CosmographButtonSelectArea(cosmograph, selectAreaButtonContainer, {})
+
+    /** Error in cosmograph/ui button in CSS */
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    this.selectAreaButton._selectAreaButton.show()
   }
 }
